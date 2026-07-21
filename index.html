@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Course HCP">
+<meta name="theme-color" content="#12281c">
+<title>Course Handicap Calculator</title>
+<style>
+  :root{
+    --pine:#12281c;        /* deep pine green — page ground */
+    --fairway:#1e4230;     /* card green */
+    --cream:#f5efdf;       /* scorecard paper */
+    --ink:#20241f;         /* ink on paper */
+    --faded:#7d8578;       /* muted text */
+    --flag:#d9a441;        /* brass/flag gold accent */
+    --line:#d8cfb8;        /* scorecard rule lines */
+    --ghost:#c9c2ab;       /* faint placeholder text */
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{font-size:16px}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--pine);
+    min-height:100vh;
+    min-height:-webkit-fill-available;
+    padding:max(14px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom));
+    display:flex;justify-content:center;
+    color:var(--ink);
+  }
+  .card{
+    width:100%;max-width:420px;
+    background:var(--cream);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 12px 40px rgba(0,0,0,.35);
+    align-self:flex-start;
+  }
+  header{
+    background:var(--fairway);
+    color:var(--cream);
+    padding:18px 20px 16px;
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  }
+  header h1{
+    font-size:.92rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  }
+  header .whs{
+    font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--flag);font-weight:600;
+  }
+  main{padding:18px 20px 6px}
+  .row{margin-bottom:14px}
+  .row.split{display:flex;gap:8px}
+  .row.split .field{flex:1;min-width:0}
+  .row.split label{font-size:.7rem;letter-spacing:.05em;white-space:nowrap;text-align:center}
+  .row.split input{font-size:1.05rem;padding:10px 8px}
+  label{
+    display:block;
+    font-size:.84rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    color:#4a5246;margin-bottom:6px;
+  }
+  label .opt{font-weight:500;font-size:.7rem;letter-spacing:.04em;text-transform:none;color:var(--faded)}
+  input,select{
+    width:100%;
+    font-size:1.15rem;
+    font-family:inherit;
+    padding:10px 12px;
+    background:#fff;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    color:var(--ink);
+    -webkit-appearance:none;appearance:none;
+  }
+  input:focus,select:focus{outline:none;border-color:var(--fairway)}
+  input.num{font-variant-numeric:tabular-nums;font-weight:600}
+  input::placeholder{color:var(--ghost);font-weight:400;opacity:1}
+  input::-webkit-input-placeholder{color:var(--ghost);font-weight:400}
+  /* Tee dropdown */
+  .teewrap{position:relative}
+  .teewrap:after{
+    content:"";position:absolute;right:14px;top:50%;
+    width:9px;height:9px;margin-top:-7px;
+    border-right:2px solid var(--faded);border-bottom:2px solid var(--faded);
+    transform:rotate(45deg);pointer-events:none;
+  }
+  select{cursor:pointer;padding-right:34px}
+  select.unset{color:var(--ghost)}
+  /* Result */
+  .result{
+    margin:6px -20px 0;
+    padding:20px 20px 24px;
+    border-top:2px dashed var(--line);
+    text-align:center;
+  }
+  .result .tag{
+    font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faded);
+  }
+  .result .who{
+    font-size:.85rem;color:var(--faded);margin-top:2px;min-height:1.1em;
+  }
+  .result .value{
+    font-size:4.6rem;line-height:1.05;
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+    color:var(--fairway);
+    letter-spacing:-.02em;
+  }
+  .result .value.empty{color:var(--line);font-weight:700}
+  .result .math{
+    font-size:.72rem;color:var(--faded);font-variant-numeric:tabular-nums;min-height:1.2em;margin-top:4px;
+  }
+  footer{
+    padding:0 20px 16px;text-align:center;
+    font-size:.62rem;letter-spacing:.08em;color:var(--faded);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <header>
+    <h1>Course Handicap Calculator</h1>
+    <span class="whs">WHS</span>
+  </header>
+  <main>
+    <div class="row">
+      <label for="course">Course Name <span class="opt">(optional)</span></label>
+      <input id="course" type="text" autocomplete="off" placeholder="Grand Reserve">
+    </div>
+    <div class="row">
+      <label for="player">Name <span class="opt">(optional)</span></label>
+      <input id="player" type="text" autocomplete="off" placeholder="Player">
+    </div>
+    <div class="row">
+      <label for="index">Handicap Index</label>
+      <input id="index" class="num" type="text" inputmode="decimal" placeholder="12.4">
+    </div>
+    <div class="row">
+      <label for="tee">Tee</label>
+      <div class="teewrap">
+        <select id="tee" class="unset">
+          <option value="" disabled selected>Select tee</option>
+          <option value="Black">Black</option>
+          <option value="Blue">Blue</option>
+          <option value="White">White</option>
+          <option value="Green">Green</option>
+          <option value="Gold">Gold</option>
+          <option value="Red">Red</option>
+          <option value="Combo">Combo</option>
+        </select>
+      </div>
+    </div>
+    <div class="row split">
+      <div class="field">
+        <label for="rating">Course Rating</label>
+        <input id="rating" class="num" type="text" inputmode="decimal" placeholder="66.2">
+      </div>
+      <div class="field">
+        <label for="slope">Slope</label>
+        <input id="slope" class="num" type="text" inputmode="numeric" placeholder="105">
+      </div>
+      <div class="field">
+        <label for="par">Par</label>
+        <input id="par" class="num" type="text" inputmode="numeric" placeholder="71">
+      </div>
+    </div>
+
+    <div class="result">
+      <div class="tag">Course Handicap</div>
+      <div class="who" id="resWho"></div>
+      <div class="value empty" id="resValue">&mdash;</div>
+      <div class="math" id="resMath"></div>
+    </div>
+  </main>
+  <footer>Index &times; Slope &divide; 113 &nbsp;+&nbsp; (Rating &minus; Par)</footer>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var indexEl=$('index'), ratingEl=$('rating'), slopeEl=$('slope'), parEl=$('par');
+  var courseEl=$('course'), playerEl=$('player'), teeEl=$('tee');
+  var resValue=$('resValue'), resMath=$('resMath'), resWho=$('resWho');
+
+  // Grand Reserve presets — auto-fill only when rating/slope are empty
+  var PRESETS = {
+    'Green': {rating:'64.2', slope:'102', par:'71'},
+    'White': {rating:'66.2', slope:'105', par:'71'}
+  };
+
+  function num(el){
+    var v = parseFloat(String(el.value).replace(',', '.'));
+    return isNaN(v) ? null : v;
+  }
+
+  function calc(){
+    var idx = num(indexEl), rating = num(ratingEl), slope = num(slopeEl), par = num(parEl);
+    var who = [];
+    if (playerEl.value.trim()) who.push(playerEl.value.trim());
+    var detail = [];
+    if (courseEl.value.trim()) detail.push(courseEl.value.trim());
+    if (teeEl.value) detail.push(teeEl.value + ' tees');
+    if (detail.length) who.push(detail.join(' \u2014 '));
+    resWho.textContent = who.join(' \u00B7 ');
+
+    if (idx===null || rating===null || slope===null || par===null){
+      resValue.textContent='\u2014';
+      resValue.classList.add('empty');
+      resMath.textContent='';
+      return;
+    }
+    var raw = idx * slope / 113 + (rating - par);
+    var chcp = Math.round(raw);
+    resValue.textContent = chcp;
+    resValue.classList.remove('empty');
+    resMath.textContent = idx.toFixed(1)+' \u00D7 '+slope+' \u00F7 113 + ('+rating.toFixed(1)+' \u2212 '+par+') = '+raw.toFixed(1);
+  }
+
+  teeEl.addEventListener('change', function(){
+    teeEl.classList.remove('unset');
+    var p = PRESETS[teeEl.value];
+    if (p){
+      if (!ratingEl.value.trim()) ratingEl.value = p.rating;
+      if (!slopeEl.value.trim())  slopeEl.value  = p.slope;
+      if (!parEl.value.trim())    parEl.value    = p.par;
+    }
+    calc();
+  });
+
+  var live=[indexEl,ratingEl,slopeEl,parEl,courseEl,playerEl];
+  for (var i=0;i<live.length;i++) live[i].addEventListener('input', calc);
+
+  // Rating: keep to one decimal place as typed
+  ratingEl.addEventListener('blur', function(){
+    var v = num(ratingEl);
+    if (v!==null) ratingEl.value = v.toFixed(1);
+    calc();
+  });
+  indexEl.addEventListener('blur', function(){
+    var v = num(indexEl);
+    if (v!==null) indexEl.value = v.toFixed(1);
+    calc();
+  });
+})();
+</script>
+</body>
+</html>
