@@ -46,6 +46,12 @@
     background-repeat:no-repeat;background-position:right 15px center;padding-right:38px;
   }
   input.auto{background:#eef3f0}
+  .reveal{position:relative}
+  .reveal input{padding-right:46px}
+  .eye{position:absolute;top:0;right:0;height:100%;width:44px;padding:0;margin:0;
+    display:flex;align-items:center;justify-content:center;
+    background:none;border:none;color:var(--faint);cursor:pointer;}
+  .eye:active{color:var(--green)}
 
   .row{display:flex;gap:12px}
   .row .field{flex:1}
@@ -149,7 +155,7 @@ const COURSES = [
     name: "Halifax Plantation Golf Club",
     par: 72,
     tees: [
-      { name: "Black", rating: 74, slope: 128, yards: 7073 },
+      { name: "Black", rating: 74.0, slope: 128, yards: 7073 },
       { name: "Blue", rating: 71.7, slope: 124, yards: 6586 },
       { name: "White", rating: 69.3, slope: 123, yards: 6112 },
       { name: "White/Gold", rating: 68.4, slope: 121, yards: 5910 },
@@ -226,27 +232,15 @@ const COURSES = [
     par: 71,
     tees: [
       { name: "BLUE", rating: 69.6, slope: 122, yards: 6021 },
-      { name: "WHITE", rating: 68, slope: 118, yards: 5657 },
+      { name: "WHITE", rating: 68.0, slope: 118, yards: 5657 },
       { name: "GOLD", rating: 66.7, slope: 115, yards: 5375 },
       { name: "RED", rating: 64.5, slope: 111, yards: 4871 }
-    ]
-  },
-
-  {
-    name: "The Wilds Resort — The Wilds 2021",
-    par: 72,
-    tees: [
-      { name: "Gold 2026", rating: 73.8, slope: 138, yards: 6772 },
-      { name: "Blue 2026", rating: 71.9, slope: 129, yards: 6365 },
-      { name: "White 2026", rating: 70.5, slope: 128, yards: 6084 },
-      { name: "Black 2026", rating: 69.3, slope: 118, yards: 5740 },
-      { name: "Red 2026", rating: 66.5, slope: 109, yards: 5124 }
     ]
   }
 
 ];
 
-const COURSE_DATA_VERSION = "2026-07-25";
+const COURSE_DATA_VERSION = "2026-07-23";
 /* ==COURSES-END== */
 
 const TEE_NAMES = ["Black","Blue","White","Green","Gold","Red","Combo"];
@@ -337,7 +331,17 @@ const TEE_NAMES = ["Black","Blue","White","Green","Gold","Red","Combo"];
 
       <div class="field" id="apiKeyField">
         <label for="apiKey" style="font-size:13px">API key</label>
-        <input id="apiKey" type="password" placeholder="Paste your golfcourseapi.com key" autocomplete="off" autocapitalize="off" autocorrect="off">
+        <div class="reveal">
+          <input id="apiKey" type="password" placeholder="Paste your golfcourseapi.com key" autocomplete="off" autocapitalize="off" autocorrect="off">
+          <button type="button" id="apiKeyEye" class="eye" aria-label="Show or hide the key">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path class="eye-open" d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z"/>
+              <circle class="eye-open" cx="12" cy="12" r="3.2"/>
+              <path class="eye-shut" d="M3 3l18 18" style="display:none"/>
+              <path class="eye-shut" d="M10.6 6.2A9.7 9.7 0 0112 6c7 0 10.5 6 10.5 6a17 17 0 01-3.4 4M6.2 7.4A17 17 0 001.5 12S5 18 12 18a9.5 9.5 0 004.2-.9" style="display:none"/>
+            </svg>
+          </button>
+        </div>
         <p class="note" style="text-align:left;margin:7px 0 0">
           Stored on this device only — it is never written into the published file.
         </p>
@@ -643,10 +647,6 @@ var APP = (function(){
   const edName=$("edName"), edPar=$("edPar"), teeRows=$("teeRows"), edWarn=$("edWarn");
   const blockOut=$("blockOut"), ghPanel=$("ghPanel");
   const API_KEY="courseHcpApiKey", GH_CFG="courseHcpGhCfg", GH_TOK="courseHcpGhToken";
-  /* Baked-in default key so lookups work out of the box and survive iOS
-     clearing local storage. Visible in the published source — it's the free,
-     rate-limited golfcourseapi.com key; regenerate and replace if ever abused. */
-  const DEFAULT_API_KEY="IVJNNFQHHARFCOHC6CMYUT6HY4";
   const DRAFT="courseHcpDraft";
   let editingOriginalName=null;
 
@@ -769,7 +769,7 @@ var APP = (function(){
     $("verifyNote").style.display="none";
     teeRows.innerHTML="";
     editor.classList.remove("hidden");
-    try{ $("apiKey").value=localStorage.getItem(API_KEY)||DEFAULT_API_KEY||""; }catch(e){ $("apiKey").value=DEFAULT_API_KEY||""; }
+    try{ $("apiKey").value=localStorage.getItem(API_KEY)||""; }catch(e){}
     $("apiKeyField").classList.remove("hidden");
 
     if(name){
@@ -798,10 +798,17 @@ var APP = (function(){
     if(k){ try{ localStorage.setItem(API_KEY,k); }catch(e){} }
   });
 
+  $("apiKeyEye").addEventListener("click",()=>{
+    const inp=$("apiKey"), show=inp.type==="password";
+    inp.type=show?"text":"password";
+    $("apiKeyEye").querySelectorAll(".eye-open").forEach(el=>el.style.display=show?"none":"");
+    $("apiKeyEye").querySelectorAll(".eye-shut").forEach(el=>el.style.display=show?"":"none");
+  });
+
   function apiKey(){
     const k=$("apiKey").value.trim();
-    if(k){ try{ localStorage.setItem(API_KEY,k); }catch(e){} return k; }
-    return DEFAULT_API_KEY||"";
+    if(k){ try{ localStorage.setItem(API_KEY,k); }catch(e){} }
+    return k;
   }
 
   /* The service authenticates with an API key header. The exact scheme
