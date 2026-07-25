@@ -45,7 +45,7 @@
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%234a6357' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 15px center;padding-right:38px;
   }
-  input[readonly]{background:#e9eeeb;color:var(--ink-soft)}
+  input.auto{background:#eef3f0}
 
   .row{display:flex;gap:12px}
   .row .field{flex:1}
@@ -145,7 +145,7 @@ const COURSES = [
     ]
   },
 
-    {
+  {
     name: "Halifax Plantation Golf Club",
     par: 72,
     tees: [
@@ -158,7 +158,7 @@ const COURSES = [
       { name: "Red", rating: 63.4, slope: 102, yards: 4863 }
     ]
   },
-  
+
   {
     name: "Hammock Beach Resorts — The Conservatory At Hammock Beach",
     par: 72,
@@ -221,7 +221,7 @@ const COURSES = [
     ]
   },
 
-    {
+  {
     name: "Riviera Country Club",
     par: 71,
     tees: [
@@ -231,7 +231,7 @@ const COURSES = [
       { name: "RED", rating: 64.5, slope: 111, yards: 4871 }
     ]
   }
-  
+
 ];
 
 const COURSE_DATA_VERSION = "2026-07-23";
@@ -259,15 +259,15 @@ const TEE_NAMES = ["Black","Blue","White","Green","Gold","Red","Combo"];
 <div class="row">
   <div class="field">
     <label for="rating">Course Rating</label>
-    <input id="rating" type="text" inputmode="decimal" placeholder="71.4" readonly>
+    <input id="rating" type="text" inputmode="decimal" placeholder="71.4">
   </div>
   <div class="field">
     <label for="slope">Slope</label>
-    <input id="slope" type="text" inputmode="numeric" placeholder="128" readonly>
+    <input id="slope" type="text" inputmode="numeric" placeholder="128">
   </div>
   <div class="field">
     <label for="par">Par</label>
-    <input id="par" type="text" inputmode="numeric" placeholder="72" readonly>
+    <input id="par" type="text" inputmode="numeric" placeholder="72">
   </div>
 </div>
 
@@ -488,12 +488,12 @@ var APP = (function(){
     saveField.classList.toggle("hidden",!manual);
     deleteField.classList.toggle("hidden",manual||!isMine(courseSel.value));
     if(manual){
-      [ratingEl,slopeEl,parEl].forEach(el=>el.removeAttribute("readonly"));
+      [ratingEl,slopeEl,parEl].forEach(el=>el.classList.remove("auto"));
       noteEl.textContent="Type the name, tee, rating, slope and par from the scorecard. Saving keeps it in the Course list on this phone.";
       refreshSaveBtn(); return;
     }
-    [ratingEl,slopeEl,parEl].forEach(el=>el.setAttribute("readonly","readonly"));
-    noteEl.textContent="Filled from the course list. Choose \u201CEnter manually\u2026\u201D to type your own.";
+    [ratingEl,slopeEl,parEl].forEach(el=>el.classList.add("auto"));
+    noteEl.textContent="Filled from the course list \u2014 tap any box to override. Choose \u201CEnter manually\u2026\u201D to start blank.";
     if(!c) return;
     const t=c.tees.find(x=>x.name===teeSel.value)||c.tees[0];
     if(!t) return;
