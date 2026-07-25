@@ -631,6 +631,10 @@ var APP = (function(){
   const edName=$("edName"), edPar=$("edPar"), teeRows=$("teeRows"), edWarn=$("edWarn");
   const blockOut=$("blockOut"), ghPanel=$("ghPanel");
   const API_KEY="courseHcpApiKey", GH_CFG="courseHcpGhCfg", GH_TOK="courseHcpGhToken";
+  /* Baked-in default key so lookups work out of the box and survive iOS
+     clearing local storage. Visible in the published source — it's the free,
+     rate-limited golfcourseapi.com key; regenerate and replace if ever abused. */
+  const DEFAULT_API_KEY="IVJNNFQHHARFCOHC6CMYUT6HY4";
   const DRAFT="courseHcpDraft";
   let editingOriginalName=null;
 
@@ -753,8 +757,8 @@ var APP = (function(){
     $("verifyNote").style.display="none";
     teeRows.innerHTML="";
     editor.classList.remove("hidden");
-    try{ $("apiKey").value=localStorage.getItem(API_KEY)||""; }catch(e){}
-    $("apiKeyField").classList.toggle("hidden", !!$("apiKey").value);
+    try{ $("apiKey").value=localStorage.getItem(API_KEY)||DEFAULT_API_KEY||""; }catch(e){ $("apiKey").value=DEFAULT_API_KEY||""; }
+    $("apiKeyField").classList.remove("hidden");
 
     if(name){
       const c=COURSES.find(x=>x.name===name);
@@ -777,10 +781,15 @@ var APP = (function(){
 
   function lkWarn(m){ const w=$("lookupWarn"); w.textContent=m||""; w.style.display=m?"block":"none"; }
 
-  function apiKey(){
+  $("apiKey").addEventListener("input",()=>{
     const k=$("apiKey").value.trim();
     if(k){ try{ localStorage.setItem(API_KEY,k); }catch(e){} }
-    return k;
+  });
+
+  function apiKey(){
+    const k=$("apiKey").value.trim();
+    if(k){ try{ localStorage.setItem(API_KEY,k); }catch(e){} return k; }
+    return DEFAULT_API_KEY||"";
   }
 
   /* The service authenticates with an API key header. The exact scheme
